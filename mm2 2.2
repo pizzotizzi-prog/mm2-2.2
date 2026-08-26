@@ -6,6 +6,7 @@ local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local RepStorage = game:GetService("ReplicatedStorage")
 local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 -- CREAZIONE GUI COMPLETAMENTE LOCALE (Senza loadstring)
 local ScreenGui = Instance.new("ScreenGui")
@@ -24,6 +25,49 @@ if not ScreenGui.Parent then
 end
 
 ScreenGui.Name = "XenoHub_MM2"
+
+-- =========================================================
+-- SCRITTA DI CARICAMENTO
+-- =========================================================
+
+local CreatedLabel = Instance.new("TextLabel")
+CreatedLabel.Name = "CreatedLabel"
+CreatedLabel.Parent = ScreenGui
+CreatedLabel.BackgroundTransparency = 1
+CreatedLabel.Position = UDim2.new(0.5, -300, 0.5, -30)
+CreatedLabel.Size = UDim2.new(0, 600, 0, 60)
+CreatedLabel.Text = "XENO HUB CREATED BY IL NEGRO DI FIDUCIA"
+CreatedLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
+CreatedLabel.TextStrokeTransparency = 0
+CreatedLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+CreatedLabel.TextSize = 25
+CreatedLabel.Font = Enum.Font.GothamBold
+CreatedLabel.TextTransparency = 1
+CreatedLabel.ZIndex = 100
+
+-- Fade IN
+TweenService:Create(
+    CreatedLabel,
+    TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    {TextTransparency = 0}
+):Play()
+
+task.wait(2)
+
+-- Fade OUT
+local FadeOut = TweenService:Create(
+    CreatedLabel,
+    TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+    {TextTransparency = 1}
+)
+
+FadeOut:Play()
+FadeOut.Completed:Wait()
+CreatedLabel:Destroy()
+
+-- =========================================================
+-- MAIN FRAME
+-- =========================================================
 
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
@@ -58,6 +102,65 @@ ContentFrame.BackgroundTransparency = 1
 UIListLayout.Parent = ContentFrame
 UIListLayout.Padding = UDim.new(0, 8)
 
+-- =========================================================
+-- X ROSSA PER CHIUDERE LA GUI
+-- =========================================================
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = MainFrame
+CloseButton.BackgroundColor3 = Color3.fromRGB(220, 40, 40)
+CloseButton.Position = UDim2.new(1, -38, 0, 8)
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 18
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.BorderSizePixel = 0
+CloseButton.ZIndex = 10
+
+Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(0, 8)
+
+-- =========================================================
+-- ICONA DRAGO IN ALTO AL CENTRO
+-- METTI QUI L'ID DELLA TUA IMMAGINE DEL DRAGO
+-- ESEMPIO: rbxassetid://1234567890
+-- =========================================================
+
+local DragonButton = Instance.new("ImageButton")
+DragonButton.Name = "DragonButton"
+DragonButton.Parent = ScreenGui
+DragonButton.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+DragonButton.Position = UDim2.new(0.5, -35, 0, 15)
+DragonButton.Size = UDim2.new(0, 70, 0, 70)
+
+-- SOSTITUISCI 0 CON L'ASSET ID DEL DRAGO
+DragonButton.Image = "rbxassetid://0"
+
+DragonButton.ScaleType = Enum.ScaleType.Crop
+DragonButton.Visible = false
+DragonButton.ZIndex = 20
+DragonButton.BorderSizePixel = 0
+
+Instance.new("UICorner", DragonButton).CornerRadius = UDim.new(1, 0)
+
+local DragonStroke = Instance.new("UIStroke")
+DragonStroke.Parent = DragonButton
+DragonStroke.Color = Color3.fromRGB(0, 200, 255)
+DragonStroke.Thickness = 2
+
+-- CHIUDE LA GUI CON LA X
+CloseButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    DragonButton.Visible = true
+end)
+
+-- RIAPRE LA GUI CLICCANDO SUL DRAGO
+DragonButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    DragonButton.Visible = false
+end)
+
 -- SETTINGS
 local Settings = {
     KillAura = false,
@@ -89,10 +192,14 @@ local function CreateToggle(text, default, callback)
     Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
 
     local state = default
+
     Btn.MouseButton1Click:Connect(function()
         state = not state
         Btn.Text = text .. ": " .. (state and "ON" or "OFF")
-        Btn.BackgroundColor3 = state and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(40, 40, 55)
+        Btn.BackgroundColor3 = state
+            and Color3.fromRGB(0, 150, 255)
+            or Color3.fromRGB(40, 40, 55)
+
         callback(state)
     end)
 end
@@ -115,11 +222,16 @@ SpeedBtn.Text = "Speed: " .. Settings.WalkSpeed
 SpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpeedBtn.Font = Enum.Font.Gotham
 SpeedBtn.Parent = ContentFrame
+
 Instance.new("UICorner", SpeedBtn).CornerRadius = UDim.new(0, 6)
 
 SpeedBtn.MouseButton1Click:Connect(function()
     Settings.WalkSpeed = Settings.WalkSpeed + 5
-    if Settings.WalkSpeed > 100 then Settings.WalkSpeed = 16 end
+
+    if Settings.WalkSpeed > 100 then
+        Settings.WalkSpeed = 16
+    end
+
     SpeedBtn.Text = "Speed: " .. Settings.WalkSpeed
 end)
 
@@ -130,14 +242,27 @@ RunService.Heartbeat:Connect(function()
     end
 
     if Settings.KillAura then
-        if LocalPlayer.Character and (LocalPlayer.Character:FindFirstChild("Knife") or LocalPlayer:GetAttribute("Role") == "Murderer") then
-            if not TargetRemote then ScanForRemotes() end
+        if LocalPlayer.Character and (
+            LocalPlayer.Character:FindFirstChild("Knife")
+            or LocalPlayer:GetAttribute("Role") == "Murderer"
+        ) then
+
+            if not TargetRemote then
+                ScanForRemotes()
+            end
+
             local myRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
             if myRoot then
                 for _, p in pairs(Players:GetPlayers()) do
-                    if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    if p ~= LocalPlayer
+                        and p.Character
+                        and p.Character:FindFirstChild("HumanoidRootPart") then
+
                         if (myRoot.Position - p.Character.HumanoidRootPart.Position).Magnitude <= Settings.AuraRange then
-                            if TargetRemote then TargetRemote:FireServer(p) end
+                            if TargetRemote then
+                                TargetRemote:FireServer(p)
+                            end
                         end
                     end
                 end
@@ -150,10 +275,16 @@ end)
 RunService.RenderStepped:Connect(function()
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character then
-            local hl = p.Character:FindFirstChild("XenoESP") or Instance.new("Highlight", p.Character)
+            local hl = p.Character:FindFirstChild("XenoESP")
+                or Instance.new("Highlight", p.Character)
+
             hl.Name = "XenoESP"
             hl.Enabled = Settings.EspEnabled
-            hl.FillColor = (p:GetAttribute("Role") == "Murderer") and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(255, 255, 255)
+
+            hl.FillColor =
+                (p:GetAttribute("Role") == "Murderer")
+                and Color3.fromRGB(255, 0, 0)
+                or Color3.fromRGB(255, 255, 255)
         end
     end
 end)
@@ -172,7 +303,13 @@ end)
 UIS.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
         local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
     end
 end)
 
