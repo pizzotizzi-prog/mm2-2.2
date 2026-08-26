@@ -58,6 +58,62 @@ ContentFrame.BackgroundTransparency = 1
 UIListLayout.Parent = ContentFrame
 UIListLayout.Padding = UDim.new(0, 8)
 
+-- =========================================================
+-- X ROSSA PER CHIUDERE LA GUI
+-- =========================================================
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = MainFrame
+CloseButton.BackgroundColor3 = Color3.fromRGB(220, 40, 40)
+CloseButton.Position = UDim2.new(1, -38, 0, 8)
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 18
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.BorderSizePixel = 0
+CloseButton.ZIndex = 10
+
+Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(0, 8)
+
+-- =========================================================
+-- ICONA DRAGO IN ALTO AL CENTRO
+-- Sostituisci 0 con l'ID della tua immagine Roblox
+-- =========================================================
+
+local DragonButton = Instance.new("ImageButton")
+DragonButton.Name = "DragonButton"
+DragonButton.Parent = ScreenGui
+DragonButton.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+DragonButton.BackgroundTransparency = 0
+DragonButton.Position = UDim2.new(0.5, -35, 0, 15)
+DragonButton.Size = UDim2.new(0, 70, 0, 70)
+DragonButton.Image = "rbxassetid://0"
+DragonButton.ScaleType = Enum.ScaleType.Crop
+DragonButton.Visible = false
+DragonButton.ZIndex = 20
+DragonButton.BorderSizePixel = 0
+
+Instance.new("UICorner", DragonButton).CornerRadius = UDim.new(1, 0)
+
+local DragonStroke = Instance.new("UIStroke")
+DragonStroke.Parent = DragonButton
+DragonStroke.Color = Color3.fromRGB(0, 200, 255)
+DragonStroke.Thickness = 2
+
+-- CHIUDE LA GUI CON LA X
+CloseButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    DragonButton.Visible = true
+end)
+
+-- RIAPRE LA GUI CLICCANDO SUL DRAGO
+DragonButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    DragonButton.Visible = false
+end)
+
 -- SETTINGS
 local Settings = {
     KillAura = false,
