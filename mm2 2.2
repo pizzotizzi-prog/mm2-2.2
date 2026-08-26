@@ -1,33 +1,43 @@
--- [[ MM2 XENO ULTIMATE - VERSION FIXED ]] --
--- Rimosse tutte le library esterne per evitare crash all'esecuzione
+-- =========================================================
+-- XENO HUB MM2 - GUI + ESP
+-- Murderer = ROSSO
+-- Sheriff  = BLU
+-- Innocent = BIANCO
+-- =========================================================
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
-local RepStorage = game:GetService("ReplicatedStorage")
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
--- CREAZIONE GUI COMPLETAMENTE LOCALE (Senza loadstring)
-local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local SideBar = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local ContentFrame = Instance.new("Frame")
-local UIListLayout = Instance.new("UIListLayout")
+-- =========================================================
+-- SETTINGS
+-- =========================================================
 
--- Gestione sicura della GUI per Xeno
+local Settings = {
+    EspEnabled = false,
+    WalkSpeed = 16
+}
+
+-- =========================================================
+-- GUI
+-- =========================================================
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "XenoHub_MM2"
+ScreenGui.ResetOnSpawn = false
+
 pcall(function()
     ScreenGui.Parent = game:GetService("CoreGui")
 end)
+
 if not ScreenGui.Parent then
     ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 end
 
-ScreenGui.Name = "XenoHub_MM2"
-
 -- =========================================================
--- SCRITTA DI CARICAMENTO
+-- LOADING LABEL
 -- =========================================================
 
 local CreatedLabel = Instance.new("TextLabel")
@@ -36,7 +46,7 @@ CreatedLabel.Parent = ScreenGui
 CreatedLabel.BackgroundTransparency = 1
 CreatedLabel.Position = UDim2.new(0.5, -300, 0.5, -30)
 CreatedLabel.Size = UDim2.new(0, 600, 0, 60)
-CreatedLabel.Text = "XENO HUB CREATED BY IL NEGRO DI FIDUCIA"
+CreatedLabel.Text = "XENO HUB"
 CreatedLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
 CreatedLabel.TextStrokeTransparency = 0
 CreatedLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
@@ -45,16 +55,15 @@ CreatedLabel.Font = Enum.Font.GothamBold
 CreatedLabel.TextTransparency = 1
 CreatedLabel.ZIndex = 100
 
--- Fade IN
-TweenService:Create(
+local FadeIn = TweenService:Create(
     CreatedLabel,
     TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
     {TextTransparency = 0}
-):Play()
+)
 
+FadeIn:Play()
 task.wait(2)
 
--- Fade OUT
 local FadeOut = TweenService:Create(
     CreatedLabel,
     TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
@@ -63,27 +72,41 @@ local FadeOut = TweenService:Create(
 
 FadeOut:Play()
 FadeOut.Completed:Wait()
+
 CreatedLabel:Destroy()
 
 -- =========================================================
 -- MAIN FRAME
 -- =========================================================
 
+local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
 MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
 MainFrame.Size = UDim2.new(0, 450, 0, 300)
 MainFrame.BorderSizePixel = 0
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.Parent = MainFrame
+
+-- =========================================================
+-- SIDEBAR
+-- =========================================================
+
+local SideBar = Instance.new("Frame")
 SideBar.Name = "SideBar"
 SideBar.Parent = MainFrame
 SideBar.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 SideBar.Size = UDim2.new(0, 130, 1, 0)
 SideBar.BorderSizePixel = 0
-Instance.new("UICorner", SideBar).CornerRadius = UDim.new(0, 12)
 
+local SideCorner = Instance.new("UICorner")
+SideCorner.CornerRadius = UDim.new(0, 12)
+SideCorner.Parent = SideBar
+
+local Title = Instance.new("TextLabel")
 Title.Name = "Title"
 Title.Parent = SideBar
 Title.Text = "XENO HUB"
@@ -93,17 +116,23 @@ Title.Font = Enum.Font.GothamBold
 Title.Size = UDim2.new(1, 0, 0, 50)
 Title.BackgroundTransparency = 1
 
+-- =========================================================
+-- CONTENT
+-- =========================================================
+
+local ContentFrame = Instance.new("Frame")
 ContentFrame.Name = "ContentFrame"
 ContentFrame.Parent = MainFrame
 ContentFrame.Position = UDim2.new(0, 140, 0, 10)
 ContentFrame.Size = UDim2.new(1, -150, 1, -20)
 ContentFrame.BackgroundTransparency = 1
 
+local UIListLayout = Instance.new("UIListLayout")
 UIListLayout.Parent = ContentFrame
 UIListLayout.Padding = UDim.new(0, 8)
 
 -- =========================================================
--- X ROSSA PER CHIUDERE LA GUI
+-- CLOSE BUTTON
 -- =========================================================
 
 local CloseButton = Instance.new("TextButton")
@@ -119,12 +148,12 @@ CloseButton.Font = Enum.Font.GothamBold
 CloseButton.BorderSizePixel = 0
 CloseButton.ZIndex = 10
 
-Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(0, 8)
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 8)
+CloseCorner.Parent = CloseButton
 
 -- =========================================================
--- ICONA DRAGO IN ALTO AL CENTRO
--- METTI QUI L'ID DELLA TUA IMMAGINE DEL DRAGO
--- ESEMPIO: rbxassetid://1234567890
+-- DRAGON BUTTON
 -- =========================================================
 
 local DragonButton = Instance.new("ImageButton")
@@ -134,7 +163,7 @@ DragonButton.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
 DragonButton.Position = UDim2.new(0.5, -35, 0, 15)
 DragonButton.Size = UDim2.new(0, 70, 0, 70)
 
--- SOSTITUISCI 0 CON L'ASSET ID DEL DRAGO
+-- Inserisci qui il tuo asset ID
 DragonButton.Image = "rbxassetid://0"
 
 DragonButton.ScaleType = Enum.ScaleType.Crop
@@ -142,91 +171,241 @@ DragonButton.Visible = false
 DragonButton.ZIndex = 20
 DragonButton.BorderSizePixel = 0
 
-Instance.new("UICorner", DragonButton).CornerRadius = UDim.new(1, 0)
+local DragonCorner = Instance.new("UICorner")
+DragonCorner.CornerRadius = UDim.new(1, 0)
+DragonCorner.Parent = DragonButton
 
 local DragonStroke = Instance.new("UIStroke")
 DragonStroke.Parent = DragonButton
 DragonStroke.Color = Color3.fromRGB(0, 200, 255)
 DragonStroke.Thickness = 2
 
--- CHIUDE LA GUI CON LA X
 CloseButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = false
     DragonButton.Visible = true
 end)
 
--- RIAPRE LA GUI CLICCANDO SUL DRAGO
 DragonButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = true
     DragonButton.Visible = false
 end)
 
--- SETTINGS
-local Settings = {
-    KillAura = false,
-    EspEnabled = false,
-    WalkSpeed = 16,
-    AuraRange = 20
-}
+-- =========================================================
+-- TOGGLE FUNCTION
+-- =========================================================
 
-local TargetRemote = nil
-
-local function ScanForRemotes()
-    for _, v in pairs(RepStorage:GetDescendants()) do
-        if v:IsA("RemoteEvent") and (v.Name:lower():find("knife") or v.Name:lower():find("attack") or v.Name:lower():find("stab")) then
-            TargetRemote = v
-            break
-        end
-    end
-end
-
--- FUNZIONE PER CREARE BOTTONI
 local function CreateToggle(text, default, callback)
+
     local Btn = Instance.new("TextButton")
     Btn.Size = UDim2.new(1, 0, 0, 40)
     Btn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
     Btn.Text = text .. ": " .. (default and "ON" or "OFF")
     Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     Btn.Font = Enum.Font.Gotham
+    Btn.TextSize = 14
     Btn.Parent = ContentFrame
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+    Btn.BorderSizePixel = 0
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 6)
+    Corner.Parent = Btn
 
     local state = default
 
     Btn.MouseButton1Click:Connect(function()
+
         state = not state
+
         Btn.Text = text .. ": " .. (state and "ON" or "OFF")
-        Btn.BackgroundColor3 = state
-            and Color3.fromRGB(0, 150, 255)
-            or Color3.fromRGB(40, 40, 55)
+
+        if state then
+            Btn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+        else
+            Btn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+        end
 
         callback(state)
     end)
+
+    return Btn
 end
 
--- AGGIUNTA FUNZIONI
-CreateToggle("Kill Aura", false, function(val) 
-    Settings.KillAura = val 
-    if val then ScanForRemotes() end
+-- =========================================================
+-- ESP ROLE DETECTION
+-- =========================================================
+
+local function GetPlayerRole(player)
+
+    if not player then
+        return "Innocent"
+    end
+
+    -- Controllo attributo Role
+    local role = player:GetAttribute("Role")
+
+    if typeof(role) == "string" then
+
+        local lowerRole = role:lower()
+
+        if lowerRole:find("murder") then
+            return "Murderer"
+        end
+
+        if lowerRole:find("sheriff") then
+            return "Sheriff"
+        end
+    end
+
+    local character = player.Character
+
+    -- Controllo Character
+    if character then
+
+        if character:FindFirstChild("Knife") then
+            return "Murderer"
+        end
+
+        if character:FindFirstChild("Gun") then
+            return "Sheriff"
+        end
+    end
+
+    -- Controllo Backpack
+    local backpack = player:FindFirstChildOfClass("Backpack")
+
+    if backpack then
+
+        if backpack:FindFirstChild("Knife") then
+            return "Murderer"
+        end
+
+        if backpack:FindFirstChild("Gun") then
+            return "Sheriff"
+        end
+    end
+
+    return "Innocent"
+end
+
+-- =========================================================
+-- ESP CREATION
+-- =========================================================
+
+local function UpdateESP(player)
+
+    if player == LocalPlayer then
+        return
+    end
+
+    local character = player.Character
+
+    if not character then
+        return
+    end
+
+    local hl = character:FindFirstChild("XenoESP")
+
+    if not hl then
+
+        hl = Instance.new("Highlight")
+        hl.Name = "XenoESP"
+        hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        hl.Parent = character
+
+    end
+
+    hl.Enabled = Settings.EspEnabled
+
+    if not Settings.EspEnabled then
+        return
+    end
+
+    local role = GetPlayerRole(player)
+
+    -- =====================================================
+    -- MURDERER = ROSSO
+    -- =====================================================
+
+    if role == "Murderer" then
+
+        hl.FillColor = Color3.fromRGB(255, 0, 0)
+        hl.OutlineColor = Color3.fromRGB(255, 80, 80)
+        hl.FillTransparency = 0.35
+        hl.OutlineTransparency = 0
+
+    -- =====================================================
+    -- SHERIFF = BLU
+    -- =====================================================
+
+    elseif role == "Sheriff" then
+
+        hl.FillColor = Color3.fromRGB(0, 100, 255)
+        hl.OutlineColor = Color3.fromRGB(80, 170, 255)
+        hl.FillTransparency = 0.35
+        hl.OutlineTransparency = 0
+
+    -- =====================================================
+    -- INNOCENT = BIANCO
+    -- =====================================================
+
+    else
+
+        hl.FillColor = Color3.fromRGB(255, 255, 255)
+        hl.OutlineColor = Color3.fromRGB(200, 200, 200)
+        hl.FillTransparency = 0.75
+        hl.OutlineTransparency = 0.25
+
+    end
+end
+
+-- =========================================================
+-- ESP TOGGLE
+-- =========================================================
+
+CreateToggle("ESP Wallhack", false, function(value)
+
+    Settings.EspEnabled = value
+
+    if not value then
+
+        for _, player in ipairs(Players:GetPlayers()) do
+
+            if player.Character then
+
+                local esp = player.Character:FindFirstChild("XenoESP")
+
+                if esp then
+                    esp.Enabled = false
+                end
+
+            end
+
+        end
+
+    end
 end)
 
-CreateToggle("ESP Wallhack", false, function(val) 
-    Settings.EspEnabled = val 
-end)
-
+-- =========================================================
 -- SPEED CONTROL
+-- =========================================================
+
 local SpeedBtn = Instance.new("TextButton")
 SpeedBtn.Size = UDim2.new(1, 0, 0, 40)
 SpeedBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
 SpeedBtn.Text = "Speed: " .. Settings.WalkSpeed
 SpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpeedBtn.Font = Enum.Font.Gotham
+SpeedBtn.TextSize = 14
 SpeedBtn.Parent = ContentFrame
+SpeedBtn.BorderSizePixel = 0
 
-Instance.new("UICorner", SpeedBtn).CornerRadius = UDim.new(0, 6)
+local SpeedCorner = Instance.new("UICorner")
+SpeedCorner.CornerRadius = UDim.new(0, 6)
+SpeedCorner.Parent = SpeedBtn
 
 SpeedBtn.MouseButton1Click:Connect(function()
-    Settings.WalkSpeed = Settings.WalkSpeed + 5
+
+    Settings.WalkSpeed += 5
 
     if Settings.WalkSpeed > 100 then
         Settings.WalkSpeed = 16
@@ -235,73 +414,97 @@ SpeedBtn.MouseButton1Click:Connect(function()
     SpeedBtn.Text = "Speed: " .. Settings.WalkSpeed
 end)
 
--- LOOP LOGIC (Heartbeat)
+-- =========================================================
+-- HEARTBEAT
+-- =========================================================
+
 RunService.Heartbeat:Connect(function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = Settings.WalkSpeed
-    end
 
-    if Settings.KillAura then
-        if LocalPlayer.Character and (
-            LocalPlayer.Character:FindFirstChild("Knife")
-            or LocalPlayer:GetAttribute("Role") == "Murderer"
-        ) then
+    local character = LocalPlayer.Character
 
-            if not TargetRemote then
-                ScanForRemotes()
-            end
+    if character then
 
-            local myRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
 
-            if myRoot then
-                for _, p in pairs(Players:GetPlayers()) do
-                    if p ~= LocalPlayer
-                        and p.Character
-                        and p.Character:FindFirstChild("HumanoidRootPart") then
-
-                        if (myRoot.Position - p.Character.HumanoidRootPart.Position).Magnitude <= Settings.AuraRange then
-                            if TargetRemote then
-                                TargetRemote:FireServer(p)
-                            end
-                        end
-                    end
-                end
-            end
+        if humanoid then
+            humanoid.WalkSpeed = Settings.WalkSpeed
         end
+
     end
 end)
 
--- LOOP ESP (RenderStepped)
+-- =========================================================
+-- ESP LOOP
+-- =========================================================
+
 RunService.RenderStepped:Connect(function()
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character then
-            local hl = p.Character:FindFirstChild("XenoESP")
-                or Instance.new("Highlight", p.Character)
 
-            hl.Name = "XenoESP"
-            hl.Enabled = Settings.EspEnabled
+    for _, player in ipairs(Players:GetPlayers()) do
 
-            hl.FillColor =
-                (p:GetAttribute("Role") == "Murderer")
-                and Color3.fromRGB(255, 0, 0)
-                or Color3.fromRGB(255, 255, 255)
+        if player ~= LocalPlayer then
+            UpdateESP(player)
         end
+
     end
 end)
 
--- DRAGGING SYSTEM (Semplificato e ultra-compatibile)
-local dragging, dragInput, dragStart, startPos
+-- =========================================================
+-- PLAYER EVENTS
+-- =========================================================
+
+Players.PlayerRemoving:Connect(function(player)
+
+    if player.Character then
+
+        local esp = player.Character:FindFirstChild("XenoESP")
+
+        if esp then
+            esp:Destroy()
+        end
+
+    end
+end)
+
+-- =========================================================
+-- DRAGGING SYSTEM
+-- =========================================================
+
+local dragging = false
+local dragInput = nil
+local dragStart = nil
+local startPos = nil
 
 MainFrame.InputBegan:Connect(function(input)
+
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
+
         dragging = true
         dragStart = input.Position
         startPos = MainFrame.Position
+
+        input.Changed:Connect(function()
+
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+
+        end)
+
     end
 end)
 
+MainFrame.InputChanged:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+
+end)
+
 UIS.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+
+    if input == dragInput and dragging then
+
         local delta = input.Position - dragStart
 
         MainFrame.Position = UDim2.new(
@@ -310,12 +513,23 @@ UIS.InputChanged:Connect(function(input)
             startPos.Y.Scale,
             startPos.Y.Offset + delta.Y
         )
+
     end
+
 end)
 
-UIS.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
+-- =========================================================
+-- CHARACTER RESPAWN
+-- =========================================================
+
+LocalPlayer.CharacterAdded:Connect(function(character)
+
+    task.wait(0.5)
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+    if humanoid then
+        humanoid.WalkSpeed = Settings.WalkSpeed
     end
 end)
 
