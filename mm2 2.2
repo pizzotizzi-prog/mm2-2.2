@@ -1,71 +1,91 @@
--- [[ MM2 ULTIMATE PREMIUM HUB - XENO EDITION ]] --
--- Fix: Dragging System, Remote Scan, and GUI Stability
+-- [[ MM2 XENO ULTIMATE - GRAPHICS OVERHAUL ]] --
+-- Design: Modern Dark Neon | Compatibility: Xeno Optimized
 
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/78931/SleekUI/main/SleekUI.lua"))() 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local RepStorage = game:GetService("ReplicatedStorage")
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
--- Interfaccia Custom Professionale
+-- // COLORS & THEME
+local Theme = {
+    Background = Color3.fromRGB(15, 15, 20),
+    SideBar = Color3.fromRGB(20, 20, 25),
+    Accent = Color3.fromRGB(0, 170, 255),
+    AccentDark = Color3.fromRGB(0, 100, 180),
+    Text = Color3.fromRGB(240, 240, 240),
+    Button = Color3.fromRGB(30, 30, 40),
+    ButtonHover = Color3.fromRGB(40, 40, 55)
+}
+
+-- // GUI SETUP
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local SideBar = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
-local TabContainer = Instance.new("Frame")
-local UIListLayout = Instance.new("UIListLayout")
 local ContentFrame = Instance.new("Frame")
+local UIListLayout = Instance.new("UIListLayout")
 
-ScreenGui.Name = "MM2_PremiumHub"
--- Xeno supporta CoreGui, ma usiamo un fallback se fallisce
-local success, err = pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
-if not success then ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") end
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+-- Safe Parent for Xeno
+pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
+if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+ScreenGui.Name = "XenoHub_MM2_V2"
 
+-- Main Frame
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+MainFrame.BackgroundColor3 = Theme.Background
 MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
-MainFrame.Size = UDim2.new(0, 500, 0, 350)
+MainFrame.Size = UDim2.new(0, 480, 0, 320)
 MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = true
+local MainCorner = Instance.new("UICorner", MainFrame)
+MainCorner.CornerRadius = UDim.new(0, 15)
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 15)
-UICorner.Parent = MainFrame
+-- Glow Border (UIStroke)
+local MainStroke = Instance.new("UIStroke", MainFrame)
+MainStroke.Thickness = 2
+MainStroke.Color = Theme.Accent
+MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
+-- SideBar
 SideBar.Name = "SideBar"
 SideBar.Parent = MainFrame
-SideBar.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-SideBar.Size = UDim2.new(0, 150, 1, 0)
+SideBar.BackgroundColor3 = Theme.SideBar
+SideBar.Size = UDim2.new(0, 140, 1, 0)
 SideBar.BorderSizePixel = 0
-
-local SideCorner = Instance.new("UICorner")
+local SideCorner = Instance.new("UICorner", SideBar)
 SideCorner.CornerRadius = UDim.new(0, 15)
-SideCorner.Parent = SideBar
 
+-- SideBar Gradient for depth
+local SideGrad = Instance.new("UIGradient", SideBar)
+SideGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(150,150,150))
+})
+SideGrad.Rotation = 90
+
+-- Title
 Title.Name = "Title"
 Title.Parent = SideBar
 Title.Text = "XENO HUB"
-Title.TextColor3 = Color3.fromRGB(0, 170, 255)
+Title.TextColor3 = Theme.Accent
 Title.TextSize = 22
 Title.Font = Enum.Font.GothamBold
-Title.Size = UDim2.new(1, 0, 0, 50)
+Title.Size = UDim2.new(1, 0, 0, 60)
 Title.BackgroundTransparency = 1
 
-TabContainer.Name = "TabContainer"
-TabContainer.Parent = SideBar
-TabContainer.Position = UDim2.new(0, 0, 0, 60)
-TabContainer.Size = UDim2.new(1, 0, 1, -60)
-TabContainer.BackgroundTransparency = 1
-
-UIListLayout.Parent = TabContainer
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 5)
-
+-- Content Area
 ContentFrame.Name = "ContentFrame"
 ContentFrame.Parent = MainFrame
-ContentFrame.Position = UDim2.new(0, 160, 0, 10)
-ContentFrame.Size = UDim2.new(1, -170, 1, -20)
+ContentFrame.Position = UDim2.new(0, 150, 0, 20)
+ContentFrame.Size = UDim2.new(1, -170, 1, -40)
 ContentFrame.BackgroundTransparency = 1
 
--- LOGICA E VARIABILI
+UIListLayout.Parent = ContentFrame
+UIListLayout.Padding = UDim.new(0, 10)
+
+-- // SETTINGS & LOGIC
 local Settings = {
     KillAura = false,
     EspEnabled = false,
@@ -73,14 +93,8 @@ local Settings = {
     AuraRange = 20
 }
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-local RepStorage = game:GetService("ReplicatedStorage")
 local TargetRemote = nil
-
 local function ScanForRemotes()
-    -- MM2 cambia spesso i nomi dei remotes, cerchiamo per pattern
     for _, v in pairs(RepStorage:GetDescendants()) do
         if v:IsA("RemoteEvent") and (v.Name:lower():find("knife") or v.Name:lower():find("attack") or v.Name:lower():find("stab")) then
             TargetRemote = v
@@ -89,35 +103,50 @@ local function ScanForRemotes()
     end
 end
 
-local function CreateToggle(name, default, callback)
-    local ToggleBtn = Instance.new("TextButton")
-    ToggleBtn.Name = name
-    ToggleBtn.Parent = ContentFrame
-    ToggleBtn.Size = UDim2.new(1, 0, 0, 40)
-    ToggleBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
-    ToggleBtn.Text = name .. ": " .. (default and "ON" or "OFF")
-    ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleBtn.Font = Enum.Font.Gotham
-    ToggleBtn.TextSize = 14
+-- // IMPROVED BUTTON CREATOR (With Animations)
+local function CreateToggle(text, default, callback)
+    local Btn = Instance.new("TextButton")
+    Btn.Size = UDim2.new(1, 0, 0, 45)
+    Btn.BackgroundColor3 = Theme.Button
+    Btn.Text = text .. " : " .. (default and "ON" or "OFF")
+    Btn.TextColor3 = Theme.Text
+    Btn.Font = Enum.Font.GothamMedium
+    Btn.TextSize = 14
+    Btn.Parent = ContentFrame
     
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 8)
-    btnCorner.Parent = ToggleBtn
+    local bCorner = Instance.new("UICorner", Btn)
+    bCorner.CornerRadius = UDim.new(0, 8)
+    
+    local bStroke = Instance.new("UIStroke", Btn)
+    bStroke.Thickness = 1
+    bStroke.Color = Color3.fromRGB(50, 50, 60)
 
     local state = default
-    ToggleBtn.MouseButton1Click:Connect(function()
+    
+    -- Hover Effect
+    Btn.MouseEnter:Connect(function()
+        TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.ButtonHover}):Play()
+    end)
+    Btn.MouseLeave:Connect(function()
+        TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = state and Theme.AccentDark or Theme.Button}):Play()
+    end)
+
+    Btn.MouseButton1Click:Connect(function()
         state = not state
-        ToggleBtn.Text = name .. ": " .. (state and "ON" or "OFF")
-        ToggleBtn.BackgroundColor3 = state and Color3.fromRGB(0, 120, 215) or Color3.fromRGB(45, 45, 60)
+        Btn.Text = text .. " : " .. (state and "ON" or "OFF")
+        
+        -- Animatione di click (piccolo shrink)
+        Btn:TweenSize(UDim2.new(0.95, 0, 0, 42), "Out", "Quad", 0.1, true)
+        task.wait(0.1)
+        Btn:TweenSize(UDim2.new(1, 0, 0, 45), "Out", "Quad", 0.1, true)
+
+        Btn.BackgroundColor3 = state and Theme.AccentDark or Theme.Button
+        bStroke.Color = state and Theme.Accent or Color3.fromRGB(50, 50, 60)
         callback(state)
     end)
-    return ToggleBtn
 end
 
-local LayoutList = Instance.new("UIListLayout")
-LayoutList.Parent = ContentFrame
-LayoutList.Padding = UDim.new(0, 10)
-
+-- // ADDING ELEMENTS
 CreateToggle("Kill Aura", false, function(val) 
     Settings.KillAura = val 
     if val then ScanForRemotes() end
@@ -127,41 +156,43 @@ CreateToggle("ESP Wallhack", false, function(val)
     Settings.EspEnabled = val 
 end)
 
-local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Parent = ContentFrame
-SpeedLabel.Size = UDim2.new(1, 0, 0, 30)
-SpeedLabel.Text = "WalkSpeed: " .. Settings.WalkSpeed
-SpeedLabel.TextColor3 = Color3.fromRGB(255,255,255)
-SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.Font = Enum.Font.Gotham
+-- Custom Speed Button (Enhanced)
+local SpeedBtn = Instance.new("TextButton")
+SpeedBtn.Size = UDim2.new(1, 0, 0, 45)
+SpeedBtn.BackgroundColor3 = Theme.Button
+SpeedBtn.Text = "WalkSpeed: " .. Settings.WalkSpeed
+SpeedBtn.TextColor3 = Theme.Text
+SpeedBtn.Font = Enum.Font.GothamMedium
+SpeedBtn.TextSize = 14
+SpeedBtn.Parent = ContentFrame
+Instance.new("UICorner", SpeedBtn).CornerRadius = UDim.new(0, 8)
+local sStroke = Instance.new("UIStroke", SpeedBtn)
+sStroke.Color = Color3.fromRGB(50, 50, 60)
 
-local SpeedPlus = Instance.new("TextButton")
-SpeedPlus.Parent = ContentFrame
-SpeedPlus.Size = UDim2.new(0, 50, 0, 30)
-SpeedPlus.Text = "+"
-SpeedPlus.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-SpeedPlus.TextColor3 = Color3.fromRGB(255,255,255)
-
-SpeedPlus.MouseButton1Click:Connect(function()
-    Settings.WalkSpeed = Settings.WalkSpeed + 2
-    SpeedLabel.Text = "WalkSpeed: " .. Settings.WalkSpeed
+SpeedBtn.MouseButton1Click:Connect(function()
+    Settings.WalkSpeed = Settings.WalkSpeed + 5
+    if Settings.WalkSpeed > 100 then Settings.WalkSpeed = 16 end
+    SpeedBtn.Text = "WalkSpeed: " .. Settings.WalkSpeed
+    
+    SpeedBtn:TweenSize(UDim2.new(0.95, 0, 0, 42), "Out", "Quad", 0.1, true)
+    task.wait(0.1)
+    SpeedBtn:TweenSize(UDim2.new(1, 0, 0, 45), "Out", "Quad", 0.1, true)
 end)
 
--- LOOP PRINCIPALI
+-- // CORE LOGIC (Keep original functions)
 RunService.Heartbeat:Connect(function()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = Settings.WalkSpeed
     end
 
     if Settings.KillAura then
-        -- Verifica se siamo l'assassino tramite l'oggetto Knife nel character
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Knife") then
+        if LocalPlayer.Character and (LocalPlayer.Character:FindFirstChild("Knife") or LocalPlayer:GetAttribute("Role") == "Murderer") then
             if not TargetRemote then ScanForRemotes() end
-            local myChar = LocalPlayer.Character
-            if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+            local myRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if myRoot then
                 for _, p in pairs(Players:GetPlayers()) do
                     if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                        if (myChar.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude <= Settings.AuraRange then
+                        if (myRoot.Position - p.Character.HumanoidRootPart.Position).Magnitude <= Settings.AuraRange then
                             if TargetRemote then TargetRemote:FireServer(p) end
                         end
                     end
@@ -174,43 +205,21 @@ end)
 RunService.RenderStepped:Connect(function()
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character then
-            local hl = p.Character:FindFirstChild("Xeno_ESP") or Instance.new("Highlight", p.Character)
-            hl.Name = "Xeno_ESP"
+            local hl = p.Character:FindFirstChild("XenoESP") or Instance.new("Highlight", p.Character)
+            hl.Name = "XenoESP"
             hl.Enabled = Settings.EspEnabled
-            -- Colore rosso per Murderer, bianco per gli altri (se l'attributo esiste)
-            hl.FillColor = (p:GetAttribute("Role") == "Murderer") and Color3.fromRGB(255,0,0) or Color3.fromRGB(255,255,255)
+            hl.FillColor = (p:GetAttribute("Role") == "Murderer") and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 170, 255)
+            hl.OutlineColor = Color3.new(1,1,1)
         end
     end
 end)
 
-local function AddTab(name)
-    local TabBtn = Instance.new("TextButton")
-    TabBtn.Parent = TabContainer
-    TabBtn.Size = UDim2.new(1, 0, 0, 40)
-    TabBtn.Text = name
-    TabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-    TabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    TabBtn.Font = Enum.Font.Gotham
-    Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 8)
-end
-
-AddTab("Main") AddTab("Visuals") AddTab("Combat") AddTab("Misc")
-
--- DRAGGING SYSTEM FIXED (Completo)
-local UIS = game:GetService("UserInputService")
+-- // DRAGGING SYSTEM (Sleek)
 local dragging, dragInput, dragStart, startPos
 
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
+        dragging = true; dragStart = input.Position; startPos = MainFrame.Position
     end
 end)
 
@@ -220,3 +229,9 @@ UIS.InputChanged:Connect(function(input)
         MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+end)
+
+print("Xeno Hub Ultimate Graphics Loaded!")
