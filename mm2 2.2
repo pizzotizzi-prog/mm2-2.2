@@ -1,25 +1,13 @@
--- [[ MM2 XENO ULTIMATE - GRAPHICS OVERHAUL ]] --
--- Design: Modern Dark Neon | Compatibility: Xeno Optimized
+-- [[ MM2 XENO ULTIMATE - VERSION FIXED ]] --
+-- Rimosse tutte le library esterne per evitare crash all'esecuzione
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local RepStorage = game:GetService("ReplicatedStorage")
 local UIS = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 
--- // COLORS & THEME
-local Theme = {
-    Background = Color3.fromRGB(15, 15, 20),
-    SideBar = Color3.fromRGB(20, 20, 25),
-    Accent = Color3.fromRGB(0, 170, 255),
-    AccentDark = Color3.fromRGB(0, 100, 180),
-    Text = Color3.fromRGB(240, 240, 240),
-    Button = Color3.fromRGB(30, 30, 40),
-    ButtonHover = Color3.fromRGB(40, 40, 55)
-}
-
--- // GUI SETUP
+-- CREAZIONE GUI COMPLETAMENTE LOCALE (Senza loadstring)
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local SideBar = Instance.new("Frame")
@@ -27,65 +15,50 @@ local Title = Instance.new("TextLabel")
 local ContentFrame = Instance.new("Frame")
 local UIListLayout = Instance.new("UIListLayout")
 
--- Safe Parent for Xeno
-pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
-if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
-ScreenGui.Name = "XenoHub_MM2_V2"
+-- Gestione sicura della GUI per Xeno
+pcall(function()
+    ScreenGui.Parent = game:GetService("CoreGui")
+end)
+if not ScreenGui.Parent then
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
 
--- Main Frame
+ScreenGui.Name = "XenoHub_MM2"
+
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Theme.Background
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
 MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
-MainFrame.Size = UDim2.new(0, 480, 0, 320)
+MainFrame.Size = UDim2.new(0, 450, 0, 300)
 MainFrame.BorderSizePixel = 0
-local MainCorner = Instance.new("UICorner", MainFrame)
-MainCorner.CornerRadius = UDim.new(0, 15)
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
--- Glow Border (UIStroke)
-local MainStroke = Instance.new("UIStroke", MainFrame)
-MainStroke.Thickness = 2
-MainStroke.Color = Theme.Accent
-MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
--- SideBar
 SideBar.Name = "SideBar"
 SideBar.Parent = MainFrame
-SideBar.BackgroundColor3 = Theme.SideBar
-SideBar.Size = UDim2.new(0, 140, 1, 0)
+SideBar.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+SideBar.Size = UDim2.new(0, 130, 1, 0)
 SideBar.BorderSizePixel = 0
-local SideCorner = Instance.new("UICorner", SideBar)
-SideCorner.CornerRadius = UDim.new(0, 15)
+Instance.new("UICorner", SideBar).CornerRadius = UDim.new(0, 12)
 
--- SideBar Gradient for depth
-local SideGrad = Instance.new("UIGradient", SideBar)
-SideGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(150,150,150))
-})
-SideGrad.Rotation = 90
-
--- Title
 Title.Name = "Title"
 Title.Parent = SideBar
 Title.Text = "XENO HUB"
-Title.TextColor3 = Theme.Accent
-Title.TextSize = 22
+Title.TextColor3 = Color3.fromRGB(0, 200, 255)
+Title.TextSize = 20
 Title.Font = Enum.Font.GothamBold
-Title.Size = UDim2.new(1, 0, 0, 60)
+Title.Size = UDim2.new(1, 0, 0, 50)
 Title.BackgroundTransparency = 1
 
--- Content Area
 ContentFrame.Name = "ContentFrame"
 ContentFrame.Parent = MainFrame
-ContentFrame.Position = UDim2.new(0, 150, 0, 20)
-ContentFrame.Size = UDim2.new(1, -170, 1, -40)
+ContentFrame.Position = UDim2.new(0, 140, 0, 10)
+ContentFrame.Size = UDim2.new(1, -150, 1, -20)
 ContentFrame.BackgroundTransparency = 1
 
 UIListLayout.Parent = ContentFrame
-UIListLayout.Padding = UDim.new(0, 10)
+UIListLayout.Padding = UDim.new(0, 8)
 
--- // SETTINGS & LOGIC
+-- SETTINGS
 local Settings = {
     KillAura = false,
     EspEnabled = false,
@@ -94,6 +67,7 @@ local Settings = {
 }
 
 local TargetRemote = nil
+
 local function ScanForRemotes()
     for _, v in pairs(RepStorage:GetDescendants()) do
         if v:IsA("RemoteEvent") and (v.Name:lower():find("knife") or v.Name:lower():find("attack") or v.Name:lower():find("stab")) then
@@ -103,50 +77,27 @@ local function ScanForRemotes()
     end
 end
 
--- // IMPROVED BUTTON CREATOR (With Animations)
+-- FUNZIONE PER CREARE BOTTONI
 local function CreateToggle(text, default, callback)
     local Btn = Instance.new("TextButton")
-    Btn.Size = UDim2.new(1, 0, 0, 45)
-    Btn.BackgroundColor3 = Theme.Button
-    Btn.Text = text .. " : " .. (default and "ON" or "OFF")
-    Btn.TextColor3 = Theme.Text
-    Btn.Font = Enum.Font.GothamMedium
-    Btn.TextSize = 14
+    Btn.Size = UDim2.new(1, 0, 0, 40)
+    Btn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+    Btn.Text = text .. ": " .. (default and "ON" or "OFF")
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.Font = Enum.Font.Gotham
     Btn.Parent = ContentFrame
-    
-    local bCorner = Instance.new("UICorner", Btn)
-    bCorner.CornerRadius = UDim.new(0, 8)
-    
-    local bStroke = Instance.new("UIStroke", Btn)
-    bStroke.Thickness = 1
-    bStroke.Color = Color3.fromRGB(50, 50, 60)
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
 
     local state = default
-    
-    -- Hover Effect
-    Btn.MouseEnter:Connect(function()
-        TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.ButtonHover}):Play()
-    end)
-    Btn.MouseLeave:Connect(function()
-        TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = state and Theme.AccentDark or Theme.Button}):Play()
-    end)
-
     Btn.MouseButton1Click:Connect(function()
         state = not state
-        Btn.Text = text .. " : " .. (state and "ON" or "OFF")
-        
-        -- Animatione di click (piccolo shrink)
-        Btn:TweenSize(UDim2.new(0.95, 0, 0, 42), "Out", "Quad", 0.1, true)
-        task.wait(0.1)
-        Btn:TweenSize(UDim2.new(1, 0, 0, 45), "Out", "Quad", 0.1, true)
-
-        Btn.BackgroundColor3 = state and Theme.AccentDark or Theme.Button
-        bStroke.Color = state and Theme.Accent or Color3.fromRGB(50, 50, 60)
+        Btn.Text = text .. ": " .. (state and "ON" or "OFF")
+        Btn.BackgroundColor3 = state and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(40, 40, 55)
         callback(state)
     end)
 end
 
--- // ADDING ELEMENTS
+-- AGGIUNTA FUNZIONI
 CreateToggle("Kill Aura", false, function(val) 
     Settings.KillAura = val 
     if val then ScanForRemotes() end
@@ -156,30 +107,23 @@ CreateToggle("ESP Wallhack", false, function(val)
     Settings.EspEnabled = val 
 end)
 
--- Custom Speed Button (Enhanced)
+-- SPEED CONTROL
 local SpeedBtn = Instance.new("TextButton")
-SpeedBtn.Size = UDim2.new(1, 0, 0, 45)
-SpeedBtn.BackgroundColor3 = Theme.Button
-SpeedBtn.Text = "WalkSpeed: " .. Settings.WalkSpeed
-SpeedBtn.TextColor3 = Theme.Text
-SpeedBtn.Font = Enum.Font.GothamMedium
-SpeedBtn.TextSize = 14
+SpeedBtn.Size = UDim2.new(1, 0, 0, 40)
+SpeedBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+SpeedBtn.Text = "Speed: " .. Settings.WalkSpeed
+SpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedBtn.Font = Enum.Font.Gotham
 SpeedBtn.Parent = ContentFrame
-Instance.new("UICorner", SpeedBtn).CornerRadius = UDim.new(0, 8)
-local sStroke = Instance.new("UIStroke", SpeedBtn)
-sStroke.Color = Color3.fromRGB(50, 50, 60)
+Instance.new("UICorner", SpeedBtn).CornerRadius = UDim.new(0, 6)
 
 SpeedBtn.MouseButton1Click:Connect(function()
     Settings.WalkSpeed = Settings.WalkSpeed + 5
     if Settings.WalkSpeed > 100 then Settings.WalkSpeed = 16 end
-    SpeedBtn.Text = "WalkSpeed: " .. Settings.WalkSpeed
-    
-    SpeedBtn:TweenSize(UDim2.new(0.95, 0, 0, 42), "Out", "Quad", 0.1, true)
-    task.wait(0.1)
-    SpeedBtn:TweenSize(UDim2.new(1, 0, 0, 45), "Out", "Quad", 0.1, true)
+    SpeedBtn.Text = "Speed: " .. Settings.WalkSpeed
 end)
 
--- // CORE LOGIC (Keep original functions)
+-- LOOP LOGIC (Heartbeat)
 RunService.Heartbeat:Connect(function()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = Settings.WalkSpeed
@@ -202,24 +146,26 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
+-- LOOP ESP (RenderStepped)
 RunService.RenderStepped:Connect(function()
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character then
             local hl = p.Character:FindFirstChild("XenoESP") or Instance.new("Highlight", p.Character)
             hl.Name = "XenoESP"
             hl.Enabled = Settings.EspEnabled
-            hl.FillColor = (p:GetAttribute("Role") == "Murderer") and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 170, 255)
-            hl.OutlineColor = Color3.new(1,1,1)
+            hl.FillColor = (p:GetAttribute("Role") == "Murderer") and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(255, 255, 255)
         end
     end
 end)
 
--- // DRAGGING SYSTEM (Sleek)
+-- DRAGGING SYSTEM (Semplificato e ultra-compatibile)
 local dragging, dragInput, dragStart, startPos
 
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true; dragStart = input.Position; startPos = MainFrame.Position
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
     end
 end)
 
@@ -231,7 +177,9 @@ UIS.InputChanged:Connect(function(input)
 end)
 
 UIS.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
 end)
 
-print("Xeno Hub Ultimate Graphics Loaded!")
+print("Xeno Hub Loaded Successfully!")
